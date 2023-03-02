@@ -22,10 +22,6 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User uploadUser(@RequestBody User user){
-        String password = user.getPassword();
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String encodedPassword = encoder.encode(password);
-        user.setPassword(encodedPassword);
         return service.addUser(user);
     }
 
@@ -59,6 +55,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
         return service.checkCredentials(user,password,user.getPassword());
+    }
+
+    @PutMapping
+    public User updateUser(@RequestBody User user){
+        return service.updateUser(user);
+    }
+
+    @DeleteMapping("/{uid}")
+    public ResponseEntity<Object> deleteUser(@PathVariable String uid){
+        return service.deleteUser(uid);
     }
 
 
