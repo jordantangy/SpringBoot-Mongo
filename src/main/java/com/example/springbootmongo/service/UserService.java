@@ -74,6 +74,7 @@ public class UserService {
     public ResponseEntity<Object> deleteUser(String uid){
 
         User user = getUserById(uid);
+        User de = null;
         try {
             if(user == null){
                 throw new UserException("User not found");
