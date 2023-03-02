@@ -55,4 +55,7 @@ public class UserService {
         }
 
     }
+    public int func(int a){
+        return a;
+    }
 }
