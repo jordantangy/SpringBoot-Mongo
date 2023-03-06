@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -31,7 +32,7 @@ public class UserController {
     }
 
     @GetMapping("/{uid}")
-    public User getUserById(@PathVariable String uid){
+    public Optional<User> getUserById(@PathVariable String uid){
         return service.getUserById(uid);
     }
 
@@ -57,17 +58,21 @@ public class UserController {
         return service.checkCredentials(user,password,user.getPassword());
     }
 
-    @PutMapping
-    public User updateUser(@RequestBody User user){
-        return service.updateUser(user);
+//    @PutMapping("/update/{uid}")
+//    public User updateUser(@PathVariable String uid, @RequestBody User user){
+//        return service.updateUser(uid,user);
+//    }
+//
+//    @DeleteMapping("/{uid}")
+//    public ResponseEntity<Object> deleteUser(@PathVariable String uid){
+//        return service.deleteUser(uid);
+//    }
+
+    @PutMapping("updatepassword/{uid}")
+    public ResponseEntity<Object>  changePassword(@PathVariable String uid, @RequestBody ObjectNode JSONObject){
+        String newPassword = JSONObject.get("password").asText().toString();
+        return service.updatePassword(uid,newPassword);
     }
-
-    @DeleteMapping("/{uid}")
-    public ResponseEntity<Object> deleteUser(@PathVariable String uid){
-        return service.deleteUser(uid);
-    }
-
-
 
 
 }

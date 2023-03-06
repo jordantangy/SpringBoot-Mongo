@@ -7,12 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
+@Repository
+@Transactional
 public class UserService {
 
     @Autowired
@@ -34,8 +40,24 @@ public class UserService {
         return repository.findAll();
     }
 
-    public User getUserById(String uid) {
-        return repository.findById(uid).get();
+    public Optional<User> getUserById(String uid) {
+        Optional<User> user = repository.findById(uid);
+        return user;
+    }
+
+
+
+
+    public Object getById(String uid){
+        User user = repository.findById(uid).get();
+        try{
+            if (user == null){
+                throw new UserException("User not found");
+            }
+        }catch (UserException e){
+            return e;
+        }
+        return user;
     }
 
     public User findByEmail(String email) {
@@ -62,28 +84,45 @@ public class UserService {
         }
     }
 
-    public User updateUser(User user){
+//    public User updateUser(String uid,User user){
+//
+//        User existingUser = getUserById(uid);
+//        existingUser.setUsername(user.getUsername());
+//        existingUser.setPassword(user.getPassword());
+//        existingUser.setPassword(encryptPassword(user.getPassword()));
+//        return repository.save(existingUser);
+//    }
+//
+//    public ResponseEntity<Object> deleteUser(String uid){
+//
+//        User user = getUserById(uid);
+//        try {
+//            if(user == null){
+//                throw new UserException("User not found");
+//            }
+//        }
+//        catch(UserException e){
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+//        }
+//        repository.deleteById(uid);
+//        return ResponseEntity.ok(user.getUsername() + " deleted successfully");
+//
+//    }
 
-        User existingUser = findByUsername(user.getUsername());
-        existingUser.setPassword(user.getUsername());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setPassword(encryptPassword(user.getPassword()));
-        return repository.save(existingUser);
+
+    private User checkUserExists(String uid) {
+        Optional<User> optionalUser = getUserById(uid);
+        if (optionalUser.isEmpty()) {
+            throw new UserException("User not found");
+        }
+        return optionalUser.get();
     }
 
-    public ResponseEntity<Object> deleteUser(String uid){
-
-        User user = getUserById(uid);
-        try {
-            if(user == null){
-                throw new UserException("User not found");
-            }
-        }
-        catch(UserException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-        repository.deleteById(uid);
-        return ResponseEntity.ok(user.getUsername() + " deleted successfully");
-
+    public ResponseEntity<Object> updatePassword(String uid, String newPassword) {
+        User user = checkUserExists(uid);
+        user.setPassword(encryptPassword(newPassword));
+        repository.save(user);
+        return ResponseEntity.ok(user.getUsername() + " successfully modified password");
     }
+
 }
