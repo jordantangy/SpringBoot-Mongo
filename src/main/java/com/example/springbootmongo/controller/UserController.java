@@ -4,10 +4,12 @@ import com.example.springbootmongo.httpexception.UserException;
 import com.example.springbootmongo.model.User;
 import com.example.springbootmongo.service.UserService;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +24,8 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public User uploadUser(@RequestBody User user){
+    public User uploadUser(@Valid @RequestBody User user){
+
         return service.addUser(user);
     }
 
@@ -58,15 +61,15 @@ public class UserController {
         return service.checkCredentials(user,password,user.getPassword());
     }
 
-//    @PutMapping("/update/{uid}")
-//    public User updateUser(@PathVariable String uid, @RequestBody User user){
-//        return service.updateUser(uid,user);
-//    }
-//
-//    @DeleteMapping("/{uid}")
-//    public ResponseEntity<Object> deleteUser(@PathVariable String uid){
-//        return service.deleteUser(uid);
-//    }
+    @PutMapping("/update/{uid}")
+    public User updateUser(@PathVariable String uid, @RequestBody User user){
+        return service.updateUser(uid,user);
+    }
+
+    @DeleteMapping("/{uid}")
+    public ResponseEntity<Object> deleteUser(@PathVariable String uid){
+        return service.deleteUser(uid);
+    }
 
     @PutMapping("updatepassword/{uid}")
     public ResponseEntity<Object>  changePassword(@PathVariable String uid, @RequestBody ObjectNode JSONObject){

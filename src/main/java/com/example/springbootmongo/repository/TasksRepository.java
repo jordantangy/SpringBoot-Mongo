@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface TasksRepository extends MongoRepository<Task,String> {
 
-    List<Task> findByImportance(int imp);
+        List<Task> findByImportance(int imp);
 
     @Query("{assignee : ?0 }")
     List<Task> getTaskByAssignee(String assignee);

@@ -17,8 +17,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
-@Repository
-@Transactional
 public class UserService {
 
     @Autowired
@@ -30,9 +28,16 @@ public class UserService {
         return encoder.encode(password);
     }
     public User addUser(User user) {
-        String password = user.getPassword();
-        String encodedPassword = encryptPassword(password);
-        user.setPassword(encodedPassword);
+        boolean isUnique = repository.findAll().stream()
+                                               .noneMatch(existingUser -> existingUser.getUsername().equals(user.getUsername()));
+        if(isUnique){
+            String password = user.getPassword();
+            String encodedPassword = encryptPassword(password);
+            user.setPassword(encodedPassword);
+        }
+        else{
+            throw new UserException("Username already exists, choose another username");
+        }
         return repository.save(user);
     }
 
@@ -45,20 +50,14 @@ public class UserService {
         return user;
     }
 
-
-
-
-    public Object getById(String uid){
-        User user = repository.findById(uid).get();
-        try{
-            if (user == null){
-                throw new UserException("User not found");
-            }
-        }catch (UserException e){
-            return e;
+    private User checkUserExists(String uid) {
+        Optional<User> optionalUser = getUserById(uid);
+        if (optionalUser.isEmpty()) {
+            throw new UserException("User not found");
         }
-        return user;
+        return optionalUser.get();
     }
+
 
     public User findByEmail(String email) {
         return repository.findByEmail(email);
@@ -75,7 +74,7 @@ public class UserService {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             boolean passwordMatches = encoder.matches(password, hashedPassword);
             if (!passwordMatches) {
-                throw new UserException("User or password don't match");
+                throw new UserException("username or password is not correct");
             } else {
                 return ResponseEntity.ok(user);
             }
@@ -84,39 +83,23 @@ public class UserService {
         }
     }
 
-//    public User updateUser(String uid,User user){
-//
-//        User existingUser = getUserById(uid);
-//        existingUser.setUsername(user.getUsername());
-//        existingUser.setPassword(user.getPassword());
-//        existingUser.setPassword(encryptPassword(user.getPassword()));
-//        return repository.save(existingUser);
-//    }
-//
-//    public ResponseEntity<Object> deleteUser(String uid){
-//
-//        User user = getUserById(uid);
-//        try {
-//            if(user == null){
-//                throw new UserException("User not found");
-//            }
-//        }
-//        catch(UserException e){
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-//        }
-//        repository.deleteById(uid);
-//        return ResponseEntity.ok(user.getUsername() + " deleted successfully");
-//
-//    }
+    public User updateUser(String uid,User user){
 
-
-    private User checkUserExists(String uid) {
-        Optional<User> optionalUser = getUserById(uid);
-        if (optionalUser.isEmpty()) {
-            throw new UserException("User not found");
-        }
-        return optionalUser.get();
+        User existingUser = checkUserExists(uid);
+        existingUser.setUsername(user.getUsername());
+        existingUser.setPassword(user.getPassword());
+        existingUser.setPassword(encryptPassword(user.getPassword()));
+        return repository.save(existingUser);
     }
+
+    public ResponseEntity<Object> deleteUser(String uid){
+
+        User user = checkUserExists(uid);
+        repository.deleteById(uid);
+        return ResponseEntity.ok(user.getUsername() + " deleted successfully");
+
+    }
+
 
     public ResponseEntity<Object> updatePassword(String uid, String newPassword) {
         User user = checkUserExists(uid);
