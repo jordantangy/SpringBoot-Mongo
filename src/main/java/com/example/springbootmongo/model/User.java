@@ -19,11 +19,11 @@ public class User {
     @Id
     private String id;
 
-    @NotBlank(message = "This field is required")
+    @NotBlank(message = "The username field is required")
     private String username;
     @Email(message = "Enter a valid email address")
     private String email;
-    @NotBlank(message = "This field is required")
+    @NotBlank(message = "The password field is required")
     private String password;
 
 

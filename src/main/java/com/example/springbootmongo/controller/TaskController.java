@@ -41,9 +41,9 @@ public class TaskController {
         return taskService.getTaskByAssignee(assignee);
     }
 
-    @PutMapping
-    public Task modifyTask(@RequestBody Task task){
-        return taskService.updateTask(task);
+    @PutMapping("/update/{tid}")
+    public Task modifyTask(@PathVariable String tid, @RequestBody Task task){
+        return taskService.updateTask(tid,task);
     }
 
     @DeleteMapping("/{taskId}")

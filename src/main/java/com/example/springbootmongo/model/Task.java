@@ -13,7 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Task {
 
     @Id
-    private String taskId;
+    private String id;
     private String description;
     private int importance;
     private String assignee;

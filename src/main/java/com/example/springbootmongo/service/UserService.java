@@ -27,18 +27,19 @@ public class UserService {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         return encoder.encode(password);
     }
-    public User addUser(User user) {
+    public ResponseEntity<Object> addUser(User user) {
         boolean isUnique = repository.findAll().stream()
                                                .noneMatch(existingUser -> existingUser.getUsername().equals(user.getUsername()));
         if(isUnique){
             String password = user.getPassword();
             String encodedPassword = encryptPassword(password);
             user.setPassword(encodedPassword);
+            repository.save(user);
         }
         else{
             throw new UserException("Username already exists, choose another username");
         }
-        return repository.save(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     public List<User> getAllUsers() {
@@ -76,7 +77,7 @@ public class UserService {
             if (!passwordMatches) {
                 throw new UserException("username or password is not correct");
             } else {
-                return ResponseEntity.ok(user);
+                return ResponseEntity.status(HttpStatus.CREATED).body("User logged in :" + user);
             }
         } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

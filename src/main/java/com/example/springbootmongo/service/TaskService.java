@@ -15,7 +15,6 @@ public class TaskService {
     private TasksRepository repository;
 
     public Task addTask(Task task){
-        task.setTaskId(UUID.randomUUID().toString().split("-")[0]);
         return repository.save(task);
     }
 
@@ -34,8 +33,8 @@ public class TaskService {
     public List<Task> getTaskByAssignee(String assignee){
         return repository.getTaskByAssignee(assignee);
     }
-    public Task updateTask(Task task){
-        Task exisitingTask = repository.findById(task.getTaskId()).get();
+    public Task updateTask(String tid,Task task){
+        Task exisitingTask = getTaskById(tid);
         exisitingTask.setDescription(task.getDescription());
         exisitingTask.setAssignee(task.getAssignee());
         exisitingTask.setImportance(task.getImportance());
